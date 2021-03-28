@@ -1,0 +1,51 @@
+Notes hackathon
+
+Il y a un exemple basic ici: https://robocode.sourceforge.io/docs/robocode/robocode/control/package-summary.html
+
+Les events c'est seulement pour savoir si la bataille est finie, commencée, s'il y a un message, ... pas trop ce que je veux
+
+--> robocode.control.snapshot c'est ce qu'on veut. On parle du robotState et du bulletState.
+
+Dans le même package, on a le ITurnSnapshot qui nous permet d'aller chercher les bullets. Peut-être qu'on peut faire de quoi avec ça?
+On a aussi le getRobots(), qui serait utile pour éliminer le joueur qui a le moins de vies.
+
+On a un package util qui nous permet de gérer les angles
+
+On a un event pour savoir si on a été touché (ensuite, il faudrait bouger pour éviter de se faire tirer dessus à nouveau)
+On a un robotsetup pour savoir le X,Y ou on est et pour savoir vers quel direction on vise (getHeading())
+
+To start robocode, do:
+/home/programmeur/robocode/robocode.sh
+
+Running 'mvn clean install' shows you where the jar is outputted:
+--> /home/programmeur/.m2/repository/prima-hackathon/myrobotname/1.0-SNAPSHOT/myrobotname-1.0-SNAPSHOT.jar
+
+Pour pouvoir inclure ton code dans l'application robocode, tout ce dont tu as besoin de faire c'est de copier le dossier primahackathon que tu as dans Eclipse (dans son entièreté) dans le dossier /home/programmeur/robocode/robots. Enlève le dossier primahackathon déjà présent et remplace-le par ton nouveau. Aussi, va dans Robots->Source Editor pour aller voir le code que tu viens d'ajouter. Ouvre ton fichier principal, puis va sous Compile->Compile et regarde s'il y a des erreurs de compilations. Bref, si tout est correct, tu vas pouvoir fermer le Source Editor. Tu vas aller sous Battle->New et choisir ton robot qui va être sous le dossier primahackathon. Notes que si tu ne le vois pas, il serait important d'aller sous Options->Clear Robots cache.
+
+
+So what to look into:
+-The robots in this youtube video: https://www.youtube.com/watch?v=RcJCw4u5GKU seem to move left-right-left-right a lot to avoid fire. They only stop to shoot (if they stop. One simply turns around the player)
+
+So here is what my pseudocode would look like:
+-There is a BulletMissedEvent, BulletHitEvent, HitByBulletEvent, HitRobotEvent, HitWallEvent
+
+When the robot reaches a wall (so when I get HitWallEvent), I want to be able to do go back (rear mode) to avoid staying stuck on the wall.
+When I get hit by a bullet, I want to 'faint' going one way, go back, and they go that way I fainted
+When I get a scan on an enemy, I want to take into consideration the distance of the enemy (since the bullet will take longer to reach, the enemy might have moved). On the first scan I get, I want to shoot first, and then turn the nozzle left. If no scan is returned .5 seconds later, I want to look the other way until I find the tank again and shoot a little offset.
+When I get a hitRobotEvent, I want to get the function getBearing() to know at what angle did I hit the tank to be able to shoot it. If I am at fault, I want to move away in the opposite direction from it. (using back() in robot)
+
+It would be important to know the gun heat using getGunHeat to know if I must try to avoid fire or find a good spot and shoot.
+
+Note that I can see if my bullet hit the enemy or not. I do not know when that becomes useful... It is difficult to say where the enemy is when a bullet missed...
+--> However, when the enemy is close, this is important!!
+Use the HitByBulletEvent to determine where to shoot next, as it gives you the direction from which the bullet was originating from.
+
+-->Can use the On... events to set what happens after an event
+setAdjustGunForRobotTurn --> Garde le gun dans la même direction indépendemment du tournant
+setAdjustRadarForGunTurn
+setAdjustRadarForRobotTurn
+
+
+
+--> Energy of bullet does not change rate of fire
+
